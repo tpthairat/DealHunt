@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DealHunt — ระบบหน้าเว็บแบบไดนามิค</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Kanit', sans-serif; }
+        .deal-card { transition: all .25s ease; cursor: pointer; }
+        .deal-card:hover { transform: translateY(-6px); box-shadow: 0 18px 36px rgba(0,0,0,0.08); }
+        .gradient-bg { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); }
+        .pulse-animation { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.6} }
+        .modal { background: rgba(0,0,0,0.5); }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp:2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* Page System */
+        .page-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .page-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Navigation */
+        .nav-link.active { color: #fbbf24 !important; font-weight: bold; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { 
+            display: none; position: absolute; background-color: white; min-width: 200px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 1000; border-radius: 8px; top: 100%; left: 0;
+        }
+        .dropdown:hover .dropdown-content { display: block; }
+        .dropdown-content a { 
+            color: #374151; padding: 12px 16px; text-decoration: none; display: block; 
+            border-radius: 4px; transition: background-color 0.2s;
+        }
+        .dropdown-content a:hover { background-color: #f3f4f6; }
+
+        /* Mobile navigation */
+        .mobile-menu { display: none; }
+        @media (max-width: 768px) {
+            .mobile-menu.active { display: block; }
+            .dropdown-content { position: static; display: block; box-shadow: none; background: transparent; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-white rounded-lg p-2"><i class="fas fa-fire text-orange-500 text-2xl"></i></div>
+                <h1 class="text-white text-2xl font-bold cursor-pointer" onclick="navigateToPage('home')">DealHunt</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <nav class="hidden md:flex gap-6 text-white">
+                    <a href="#" onclick="navigateToPage('home')" class="nav-link hover:text-yellow-300" data-page="home">หน้าแรก</a>
+                    
+                    <div class="dropdown">
+                        <a href="#" onclick="navigateToPage('flash')" class="nav-link hover:text-yellow-300" data-page="flash">Flash Sale <i class="fas fa-chevron-down ml-1"></i></a>
+                        <div class="dropdown-content">
+                            <a href="#" onclick="navigateToPage('flash')">Flash Sale หลัก</a>
+                            <a href="#" onclick="navigateToPage('flash-today')">Flash Sale วันนี้</a>
+                            <a href="#" onclick="navigateToPage('flash-weekend')">Flash Sale สุดสัปดาห์</a>
+                            <a href="#" onclick="navigateToPage('flash-mega')">Mega Flash Sale</a>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <a href="#" onclick="navigateToPage('deals')" class="nav-link hover:text-yellow-300" data-page="deals">โปรโมชั่น <i class="fas fa-chevron-down ml-1"></i></a>
+                        <div class="dropdown-content">
+                            <a href="#" onclick="navigateToPage('deals')">โปรโมชั่นทั้งหมด</a>
+                            <a href="#" onclick="navigateToPage('deals-mobile')">โปรโมชั่นมือถือ</a>
+                            <a href="#" onclick="navigateToPage('deals-computer')">โปรโมชั่นคอมพิวเตอร์</a>
+                            <a href="#" onclick="navigateToPage('deals-fashion')">โปรโมชั่นแฟชั่น</a>
+                            <a href="#" onclick="navigateToPage('deals-home')">โปรโมชั่นบ้านและสวน</a>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <a href="#" onclick="navigateToPage('stores')" class="nav-link hover:text-yellow-300" data-page="stores">ร้านค้า <i class="fas fa-chevron-down ml-1"></i></a>
+                        <div class="dropdown-content">
+                            <a href="#" onclick="navigateToPage('stores')">ร้านค้าทั้งหมด</a>
+                            <a href="#" onclick="navigateToPage('store-shopee')">Shopee</a>
+                            <a href="#" onclick="navigateToPage('store-lazada')">Lazada</a>
+                            <a href="#" onclick="navigateToPage('store-jib')">JIB</a>
+                            <a href="#" onclick="navigateToPage('store-powerbuy')">Power Buy</a>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <a href="#" onclick="navigateToPage('about')" class="nav-link hover:text-yellow-300" data-page="about">เกี่ยวกับ <i class="fas fa-chevron-down ml-1"></i></a>
+                        <div class="dropdown-content">
+                            <a href="#" onclick="navigateToPage('about')">เกี่ยวกับเรา</a>
+                            <a href="#" onclick="navigateToPage('contact')">ติดต่อเรา</a>
+                            <a href="#" onclick="navigateToPage('faq')">คำถามที่พบบ่อย</a>
+                            <a href="#" onclick="navigateToPage('privacy')">นโยบายความเป็นส่วนตัว</a>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Mobile menu button -->
+                <button id="mobileMenuBtn" class="md:hidden text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <button id="openAdminBtn" class="bg-white text-gray-800 px-3 py-2 rounded-lg font-semibold hover:bg-gray-100">ผู้ดูแล</button>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Menu -->
+        <div id="mobileMenu" class="md:hidden mobile-menu bg-white shadow-lg">
+            <div class="px-4 py-2 space-y-2">
+                <a href="#" onclick="navigateToPage('home')" class="block py-2 text-gray-800 hover:text-blue-600">หน้าแรก</a>
+                <a href="#" onclick="navigateToPage('flash')" class="block py-2 text-gray-800 hover:text-blue-600">Flash Sale</a>
+                <a href="#" onclick="navigateToPage('deals')" class="block py-2 text-gray-800 hover:text-blue-600">โปรโมชั่น</a>
+                <a href="#" onclick="navigateToPage('stores')" class="block py-2 text-gray-800 hover:text-blue-600">ร้านค้า</a>
+                <a href="#" onclick="navigateToPage('about')" class="block py-2 text-gray-800 hover:text-blue-600">เกี่ยวกับ</a>
+                <a href="#" onclick="navigateToPage('contact')" class="block py-2 text-gray-800 hover:text-blue-600">ติดต่อเรา</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page: Home -->
+    <div id="page-home" class="page-content active">
+        <section class="bg-gradient-to-r from-blue-600 to-purple-600 py-12 text-white">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-4xl md:text-5xl font-bold mb-2">ค้นหาโปรโมชั่นสุดคุ้ม</h2>
+                <p class="text-lg md:text-xl mb-6">รวบรวมดีลดีที่สุดจากทุกแพลตฟอร์ม อัปเดตได้ด้วยตัวคุณเองผ่านแผงจัดการ</p>
+                <div class="max-w-2xl mx-auto">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="ค้นหาสินค้าหรือร้านค้า..." class="w-full px-6 py-3 rounded-full text-gray-800 text-lg focus:outline-none focus:ring-4 focus:ring-yellow-300" />
+                        <button id="btnSearch" class="absolute right-2 top-2 bg-orange-500 text-white px-4 py-2 rounded-full hover:bg-orange-600 transition-colors">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories -->
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">หมวดหมู่ยอดนิยม</h3>
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                    <div class="category-item bg-white rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('deals-mobile')"><i class="fas fa-mobile-alt text-2xl text-blue-500 mb-1"></i><p class="font-medium text-sm">มือถือ</p></div>
+                    <div class="category-item bg-white rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('deals-computer')"><i class="fas fa-laptop text-2xl text-green-500 mb-1"></i><p class="font-medium text-sm">คอมพิวเตอร์</p></div>
+                    <div class="category-item bg-white rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('deals-fashion')"><i class="fas fa-tshirt text-2xl text-pink-500 mb-1"></i><p class="font-medium text-sm">แฟชั่น</p></div>
+                    <div class="category-item bg-white rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('deals-home')"><i class="fas fa-home text-2xl text-purple-500 mb-1"></i><p class="font-medium text-sm">บ้านและสวน</p></div>
+                    <div class="category-item bg-white rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('deals-gaming')"><i class="fas fa-gamepad text-2xl text-red-500 mb-1"></i><p class="font-medium text-sm">เกมส์</p></div>
+                    <div class="category-item bg-white rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('deals-health')"><i class="fas fa-heart text-2xl text-orange-500 mb-1"></i><p class="font-medium text-sm">สุขภาพ</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Flash Sale Preview -->
+        <section class="py-8 bg-red-50">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center justify-center mb-6 gap-3">
+                    <i class="fas fa-bolt text-yellow-400 text-3xl pulse-animation"></i>
+                    <h3 class="text-2xl font-bold text-red-600">Flash Sale วันนี้</h3>
+                    <i class="fas fa-bolt text-yellow-400 text-3xl pulse-animation"></i>
+                </div>
+                <div id="homeFlashDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"></div>
+                <div class="text-center">
+                    <button onclick="navigateToPage('flash')" class="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 transition-colors font-semibold">ดู Flash Sale ทั้งหมด</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Deals Preview -->
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">โปรโมชั่นแนะนำ</h3>
+                <div id="homeFeaturedDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6"></div>
+                <div class="text-center">
+                    <button onclick="navigateToPage('deals')" class="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition-colors font-semibold">ดูโปรโมชั่นทั้งหมด</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Page: Flash Sale -->
+    <div id="page-flash" class="page-content">
+        <section class="py-8 bg-red-50">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center justify-center mb-6 gap-3">
+                    <i class="fas fa-bolt text-yellow-400 text-3xl pulse-animation"></i>
+                    <h3 class="text-3xl font-bold text-red-600">Flash Sale หลัก</h3>
+                    <i class="fas fa-bolt text-yellow-400 text-3xl pulse-animation"></i>
+                </div>
+                <div class="text-center mb-6">
+                    <div class="inline-flex bg-red-600 text-white px-6 py-2 rounded-full text-lg font-semibold">
+                        <i class="fas fa-clock mr-2"></i>
+                        เหลือเวลา: <span id="countdown" class="ml-2 font-bold">--:--:--</span>
+                    </div>
+                </div>
+                <div id="flashSaleDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Page: Flash Sale Today -->
+    <div id="page-flash-today" class="page-content">
+        <section class="py-8 bg-orange-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-orange-600 mb-6 text-center">Flash Sale วันนี้</h2>
+                <p class="text-center text-gray-600 mb-8">โปรโมชั่นพิเศษเฉพาะวันนี้เท่านั้น!</p>
+                <div id="flashTodayDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Page: Flash Sale Weekend -->
+    <div id="page-flash-weekend" class="page-content">
+        <section class="py-8 bg-purple-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-purple-600 mb-6 text-center">Flash Sale สุดสัปดาห์</h2>
+                <p class="text-center text-gray-600 mb-8">โปรโมชั่นสุดพิเศษเฉพาะสุดสัปดาห์!</p>
+                <div id="flashWeekendDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Page: Mega Flash Sale -->
+    <div id="page-flash-mega" class="page-content">
+        <section class="py-8 bg-gradient-to-r from-red-500 to-pink-500 text-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-4xl font-bold mb-6 text-center">🔥 MEGA FLASH SALE 🔥</h2>
+                <p class="text-xl text-center mb-8">ลดสูงสุด 90%! โปรโมชั่นใหญ่ที่สุดของปี</p>
+                <div id="flashMegaDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Page: All Deals -->
+    <div id="page-deals" class="page-content">
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <h3 class="text-3xl font-bold text-gray-800">โปรโมชั่นทั้งหมด</h3>
+                    <div class="flex gap-3 items-center">
+                        <select id="sortSelect" class="px-3 py-2 border rounded-lg">
+                            <option value="newest">ใหม่ล่าสุด</option>
+                            <option value="discount">ส่วนลดมากสุด</option>
+                            <option value="price-low">ราคาต่ำสุด</option>
+                            <option value="price-high">ราคาสูงสุด</option>
+                        </select>
+                        <select id="storeFilter" class="px-3 py-2 border rounded-lg">
+                            <option value="">ทุกร้าน</option>
+                            <option value="shopee">Shopee</option>
+                            <option value="lazada">Lazada</option>
+                            <option value="jib">JIB</option>
+                            <option value="powerbuy">Power Buy</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="allDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+                <div class="text-center mt-8">
+                    <button id="loadMore" class="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors">โหลดเพิ่มเติม</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Dynamic Category Pages -->
+    <div id="page-deals-mobile" class="page-content">
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-blue-600 mb-6 text-center"><i class="fas fa-mobile-alt mr-3"></i>โปรโมชั่นมือถือ</h2>
+                <div id="mobileDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-deals-computer" class="page-content">
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-green-600 mb-6 text-center"><i class="fas fa-laptop mr-3"></i>โปรโมชั่นคอมพิวเตอร์</h2>
+                <div id="computerDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-deals-fashion" class="page-content">
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-pink-600 mb-6 text-center"><i class="fas fa-tshirt mr-3"></i>โปรโมชั่นแฟชั่น</h2>
+                <div id="fashionDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-deals-home" class="page-content">
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-purple-600 mb-6 text-center"><i class="fas fa-home mr-3"></i>โปรโมชั่นบ้านและสวน</h2>
+                <div id="homeDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-deals-gaming" class="page-content">
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-red-600 mb-6 text-center"><i class="fas fa-gamepad mr-3"></i>โปรโมชั่นเกมส์</h2>
+                <div id="gamingDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-deals-health" class="page-content">
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-orange-600 mb-6 text-center"><i class="fas fa-heart mr-3"></i>โปรโมชั่นสุขภาพ</h2>
+                <div id="healthDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Store Pages -->
+    <div id="page-stores" class="page-content">
+        <section class="py-8">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">ร้านค้าพาร์ทเนอร์ทั้งหมด</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('store-shopee')">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-shopping-bag text-2xl text-orange-500"></i>
+                        </div>
+                        <h3 class="font-bold text-orange-600">Shopee</h3>
+                        <p class="text-sm text-gray-500">ช้อปปี้</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('store-lazada')">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-store text-2xl text-blue-500"></i>
+                        </div>
+                        <h3 class="font-bold text-blue-600">Lazada</h3>
+                        <p class="text-sm text-gray-500">ลาซาด้า</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('store-jib')">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-laptop text-2xl text-green-500"></i>
+                        </div>
+                        <h3 class="font-bold text-green-600">JIB</h3>
+                        <p class="text-sm text-gray-500">ร้านคอม</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 text-center shadow-md hover:shadow-lg transition-shadow cursor-pointer" onclick="navigateToPage('store-powerbuy')">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-plug text-2xl text-purple-500"></i>
+                        </div>
+                        <h3 class="font-bold text-purple-600">Power Buy</h3>
+                        <p class="text-sm text-gray-500">พาวเวอร์บาย</p>
+                    </div>
+                </div>
+                <div id="allStoresDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-store-shopee" class="page-content">
+        <section class="py-8 bg-orange-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-orange-600 mb-6 text-center">
+                    <i class="fas fa-shopping-bag mr-3"></i>Shopee ช้อปปี้
+                </h2>
+                <div id="shopeeDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-store-lazada" class="page-content">
+        <section class="py-8 bg-blue-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-blue-600 mb-6 text-center">
+                    <i class="fas fa-store mr-3"></i>Lazada ลาซาด้า
+                </h2>
+                <div id="lazadaDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-store-jib" class="page-content">
+        <section class="py-8 bg-green-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-green-600 mb-6 text-center">
+                    <i class="fas fa-laptop mr-3"></i>JIB ร้านคอมพิวเตอร์
+                </h2>
+                <div id="jibDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-store-powerbuy" class="page-content">
+        <section class="py-8 bg-purple-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-purple-600 mb-6 text-center">
+                    <i class="fas fa-plug mr-3"></i>Power Buy พาวเวอร์บาย
+                </h2>
+                <div id="powerbuyDeals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Info Pages -->
+    <div id="page-about" class="page-content">
+        <section class="py-12">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 text-center">เกี่ยวกับ DealHunt</h2>
+                    <div class="grid md:grid-cols-2 gap-8 items-center mb-12">
+                        <div>
+                            <h3 class="text-2xl font-bold text-blue-600 mb-4">พันธกิจของเรา</h3>
+                            <p class="text-gray-600 mb-4">DealHunt คือแพลตฟอร์มรวบรวมโปรโมชั่นและดีลสุดคุ้มจากร้านค้าออนไลน์ชั้นนำ เพื่อช่วยให้คุณประหยัดเงินและเวลาในการช้อปปิ้ง</p>
+                            <p class="text-gray-600">เราเชื่อว่าการช้อปปิ้งแบบชาญฉลาดคือกุญแจสู่ความสุขทางการเงิน</p>
+                        </div>
+                        <div>
+                            <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=500" alt="Shopping" class="rounded-lg shadow-lg">
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-8 text-center">
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-search text-2xl text-blue-600"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2">ค้นหาง่าย</h4>
+                            <p class="text-gray-600">ระบบค้นหาและจัดหมวดหมู่ที่ช่วยให้คุณหาดีลที่ต้องการได้อย่างรวดเร็ว</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-tags text-2xl text-green-600"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2">ดีลคุณภาพ</h4>
+                            <p class="text-gray-600">คัดสรรแต่โปรโมชั่นและส่วนลดที่มีคุณค่าจริง จากร้านค้าที่เชื่อถือได้</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-clock text-2xl text-orange-600"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2">อัปเดตตลอดเวลา</h4>
+                            <p class="text-gray-600">ข้อมูลโปรโมชั่นที่อัปเดตแบบเรียลไทม์ เพื่อไม่ให้คุณพลาดดีลดีๆ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-contact" class="page-content">
+        <section class="py-12">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 text-center">ติดต่อเรา</h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-12">
+                        <div>
+                            <h3 class="text-2xl font-bold text-blue-600 mb-6">ช่องทางการติดต่อ</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-envelope text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">อีเมล</h4>
+                                        <p class="text-gray-600">contact@dealhunt.com</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-phone text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">โทรศัพท์</h4>
+                                        <p class="text-gray-600">02-xxx-xxxx</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="fab fa-line text-purple-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">LINE</h4>
+                                        <p class="text-gray-600">@dealhunt</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fab fa-facebook text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">Facebook</h4>
+                                        <p class="text-gray-600">DealHunt Thailand</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold text-blue-600 mb-6">ส่งข้อความถึงเรา</h3>
+                            <form class="space-y-4" onsubmit="handleContactForm(event)">
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">ชื่อ-นามสกุล</label>
+                                    <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">อีเมล</label>
+                                    <input type="email" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">หัวข้อ</label>
+                                    <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">ข้อความ</label>
+                                    <textarea rows="4" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                                </div>
+                                <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">ส่งข้อความ</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-faq" class="page-content">
+        <section class="py-12">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 text-center">คำถามที่พบบ่อย</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <h3 class="text-xl font-bold text-blue-600 mb-3">DealHunt คืออะไร?</h3>
+                            <p class="text-gray-600">DealHunt เป็นเว็บไซต์รวบรวมโปรโมชั่นและดีลพิเศษจากร้านค้าออนไลน์ต่างๆ เพื่อช่วยให้คุณหาสินค้าราคาดีได้ง่ายขึ้น</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <h3 class="text-xl font-bold text-blue-600 mb-3">ใช้บริการฟรีใช่หรือไม่?</h3>
+                            <p class="text-gray-600">ใช่ค่ะ DealHunt ให้บริการฟรี 100% คุณสามารถเข้ามาดูและใช้ข้อมูลโปรโมชั่นได้โดยไม่เสียค่าใช้จ่าย</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <h3 class="text-xl font-bold text-blue-600 mb-3">ข้อมูลโปรโมชั่นอัปเดตบ่อยแค่ไหน?</h3>
+                            <p class="text-gray-600">เราอัปเดตข้อมูลทุกวันเพื่อให้แน่ใจว่าคุณจะได้รับข้อมูลโปรโมชั่นที่ใหม่และถูกต้องที่สุด</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <h3 class="text-xl font-bold text-blue-600 mb-3">หากโปรโมชั่นหมดอายุแล้วจะทำอย่างไร?</h3>
+                            <p class="text-gray-600">หากคุณพบโปรโมชั่นที่หมดอายุแล้ว กรุณาแจ้งให้เราทราบผ่านช่องทางติดต่อ เราจะรีบอัปเดตข้อมูลให้</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <h3 class="text-xl font-bold text-blue-600 mb-3">สามารถแนะนำโปรโมชั่นให้เราได้หรือไม่?</h3>
+                            <p class="text-gray-600">ได้เลยค่ะ เรายินดีรับข้อมูลโปรโมชั่นจากคุณ กรุณาส่งรายละเอียดมาที่อีเมล contact@dealhunt.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-privacy" class="page-content">
+        <section class="py-12">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 text-center">นโยบายความเป็นส่วนตัว</h2>
+                    
+                    <div class="bg-white rounded-xl p-8 shadow-md space-y-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-blue-600 mb-4">การเก็บรวบรวมข้อมูล</h3>
+                            <p class="text-gray-600 mb-4">DealHunt เก็บรวบรวมข้อมูลที่จำเป็นเพื่อให้บริการแก่คุณเท่านั้น ได้แก่:</p>
+                            <ul class="list-disc list-inside text-gray-600 space-y-2">
+                                <li>ข้อมูลการใช้งานเว็บไซต์ (เช่น หน้าที่เข้าชม, เวลาที่ใช้)</li>
+                                <li>ข้อมูลที่คุณให้ความยินยอม (เช่น อีเมลสำหรับรับข่าวสาร)</li>
+                                <li>คุกกี้เพื่อปรับปรุงประสบการณ์การใช้งาน</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold text-blue-600 mb-4">การใช้ข้อมูล</h3>
+                            <p class="text-gray-600 mb-4">เราใช้ข้อมูลของคุณเพื่อ:</p>
+                            <ul class="list-disc list-inside text-gray-600 space-y-2">
+                                <li>ปรับปรุงและพัฒนาบริการ</li>
+                                <li>ส่งข้อมูลโปรโมชั่นที่เกี่ยวข้อง (หากคุณสมัครรับ)</li>
+                                <li>วิเคราะห์การใช้งานเพื่อปรับปรุงประสิทธิภาพ</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold text-blue-600 mb-4">การปกป้องข้อมูล</h3>
+                            <p class="text-gray-600">เราใช้มาตรการรักษาความปลอดภัยที่เหมาะสมเพื่อปกป้องข้อมูลส่วนบุคคลของคุณจากการเข้าถึง การใช้ หรือการเปิดเผยโดยไม่ได้รับอนุญาต</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold text-blue-600 mb-4">สิทธิของคุณ</h3>
+                            <p class="text-gray-600 mb-4">คุณมีสิทธิในการ:</p>
+                            <ul class="list-disc list-inside text-gray-600 space-y-2">
+                                <li>เข้าถึงและแก้ไขข้อมูลส่วนบุคคลของคุณ</li>
+                                <li>ขอให้ลบข้อมูลส่วนบุคคล</li>
+                                <li>ถอนความยินยอมในการเก็บรวบรวมข้อมูล</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold text-blue-600 mb-4">การติดต่อ</h3>
+                            <p class="text-gray-600">หากคุณมีคำถามเกี่ยวกับนโยบายความเป็นส่วนตัว กรุณาติดต่อเราที่ contact@dealhunt.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="bg-orange-500 rounded-lg p-2"><i class="fas fa-fire text-white"></i></div>
+                        <h3 class="font-bold text-xl">DealHunt</h3>
+                    </div>
+                    <p class="text-gray-300 text-sm">รวบรวมดีลดีที่สุดจากทุกแพลตฟอร์ม เพื่อประสบการณ์ช้อปปิ้งที่ดีที่สุด</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">หมวดหมู่</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="#" onclick="navigateToPage('deals-mobile')" class="hover:text-white">มือถือ</a></li>
+                        <li><a href="#" onclick="navigateToPage('deals-computer')" class="hover:text-white">คอมพิวเตอร์</a></li>
+                        <li><a href="#" onclick="navigateToPage('deals-fashion')" class="hover:text-white">แฟชั่น</a></li>
+                        <li><a href="#" onclick="navigateToPage('deals-gaming')" class="hover:text-white">เกมส์</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">ร้านค้า</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="#" onclick="navigateToPage('store-shopee')" class="hover:text-white">Shopee</a></li>
+                        <li><a href="#" onclick="navigateToPage('store-lazada')" class="hover:text-white">Lazada</a></li>
+                        <li><a href="#" onclick="navigateToPage('store-jib')" class="hover:text-white">JIB</a></li>
+                        <li><a href="#" onclick="navigateToPage('store-powerbuy')" class="hover:text-white">Power Buy</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">เกี่ยวกับ</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="#" onclick="navigateToPage('about')" class="hover:text-white">เกี่ยวกับเรา</a></li>
+                        <li><a href="#" onclick="navigateToPage('contact')" class="hover:text-white">ติดต่อเรา</a></li>
+                        <li><a href="#" onclick="navigateToPage('faq')" class="hover:text-white">FAQ</a></li>
+                        <li><a href="#" onclick="navigateToPage('privacy')" class="hover:text-white">นโยบาย</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300 text-sm">
+                <p>&copy; <span id="year"></span> DealHunt — ระบบหน้าเว็บแบบไดนามิค. สงวนลิขสิทธิ์.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="fixed inset-0 hidden items-center justify-center modal z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-6xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="font-bold text-lg">แผงจัดการ (Admin Dashboard)</h4>
+                <div class="flex items-center gap-2">
+                    <select id="adminPageSelect" class="px-3 py-1 rounded bg-blue-100 border">
+                        <option value="">เลือกหน้าที่จะแก้ไข</option>
+                        <option value="home">หน้าแรก</option>
+                        <option value="flash">Flash Sale</option>
+                        <option value="flash-today">Flash Sale วันนี้</option>
+                        <option value="flash-weekend">Flash Sale สุดสัปดาห์</option>
+                        <option value="flash-mega">Mega Flash Sale</option>
+                        <option value="deals">โปรโมชั่นทั้งหมด</option>
+                        <option value="deals-mobile">โปรโมชั่นมือถือ</option>
+                        <option value="deals-computer">โปรโมชั่นคอมพิวเตอร์</option>
+                        <option value="deals-fashion">โปรโมชั่นแฟชั่น</option>
+                        <option value="deals-home">โปรโมชั่นบ้านและสวน</option>
+                        <option value="deals-gaming">โปรโมชั่นเกมส์</option>
+                        <option value="deals-health">โปรโมชั่นสุขภาพ</option>
+                        <option value="stores">ร้านค้าทั้งหมด</option>
+                        <option value="store-shopee">Shopee</option>
+                        <option value="store-lazada">Lazada</option>
+                        <option value="store-jib">JIB</option>
+                        <option value="store-powerbuy">Power Buy</option>
+                    </select>
+                    <button id="btnExportJson" class="px-3 py-1 rounded bg-gray-100 border">Export JSON</button>
+                    <button id="btnImportJson" class="px-3 py-1 rounded bg-gray-100 border">Import JSON</button>
+                    <button id="btnChangePassword" class="px-3 py-1 rounded bg-yellow-500 text-white">เปลี่ยนรหัสผ่าน</button>
+                    <input type="file" id="fileImport" accept=".json" class="hidden">
+                    <button id="closeAdmin" class="px-3 py-1 rounded bg-red-500 text-white">ปิด</button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="md:col-span-1 bg-gray-50 p-4 rounded-lg">
+                    <h5 class="font-semibold mb-2">เพิ่มโปรโมชั่นใหม่</h5>
+                    <form id="dealForm" class="space-y-2 text-sm">
+                        <input type="hidden" id="dealId">
+                        <div>
+                            <label class="block mb-1">หัวข้อ</label>
+                            <input id="title" class="w-full px-3 py-2 border rounded" required />
+                        </div>
+                        <div>
+                            <label class="block mb-1">ลิงก์ Affiliate</label>
+                            <input id="affiliateUrl" class="w-full px-3 py-2 border rounded" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block mb-1">ราคาเดิม</label>
+                                <input id="originalPrice" type="number" class="w-full px-3 py-2 border rounded" />
+                            </div>
+                            <div>
+                                <label class="block mb-1">ราคาขาย</label>
+                                <input id="salePrice" type="number" class="w-full px-3 py-2 border rounded" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block mb-1">รูป (URL)</label>
+                            <input id="image" class="w-full px-3 py-2 border rounded" placeholder="https://..." />
+                        </div>
+                        <div>
+                            <label class="block mb-1">ร้าน (store)</label>
+                            <input id="store" class="w-full px-3 py-2 border rounded" placeholder="shopee, lazada..." />
+                        </div>
+                        <div>
+                            <label class="block mb-1">หมวดหมู่</label>
+                            <select id="category" class="w-full px-3 py-2 border rounded">
+                                <option value="">เลือกหมวดหมู่</option>
+                                <option value="mobile">มือถือ</option>
+                                <option value="computer">คอมพิวเตอร์</option>
+                                <option value="fashion">แฟชั่น</option>
+                                <option value="home">บ้านและสวน</option>
+                                <option value="gaming">เกมส์</option>
+                                <option value="health">สุขภาพ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block mb-1">แสดงในหน้า</label>
+                            <select id="showInPage" class="w-full px-3 py-2 border rounded">
+                                <option value="">เลือกหน้าที่จะแสดง</option>
+                                <option value="home">หน้าแรก</option>
+                                <option value="flash">Flash Sale</option>
+                                <option value="flash-today">Flash Sale วันนี้</option>
+                                <option value="flash-weekend">Flash Sale สุดสัปดาห์</option>
+                                <option value="flash-mega">Mega Flash Sale</option>
+                                <option value="all">ทุกหน้าที่เกี่ยวข้อง</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center gap-2"><input id="isFlashSale" type="checkbox" /> Flash Sale</label>
+                            <label class="flex items-center gap-2"><input id="isPublished" type="checkbox" checked /> เผยแพร่</label>
+                        </div>
+                        <div>
+                            <label class="block mb-1">หมดเขต (UTC)</label>
+                            <input id="expiresAt" type="datetime-local" class="w-full px-3 py-2 border rounded" />
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button type="submit" class="flex-1 bg-green-600 text-white px-3 py-2 rounded">บันทึก</button>
+                            <button type="button" id="btnClearForm" class="flex-1 bg-gray-200 rounded">ล้าง</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="md:col-span-2 bg-white p-4 rounded-lg">
+                    <h5 class="font-semibold mb-2">รายการโปรโมชั่น</h5>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-gray-600 text-xs">
+                                    <th class="p-2">#</th>
+                                    <th class="p-2">ชื่อ</th>
+                                    <th class="p-2">ร้าน</th>
+                                    <th class="p-2">ราคา</th>
+                                    <th class="p-2">หน้า</th>
+                                    <th class="p-2">Flash</th>
+                                    <th class="p-2">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+       // Storage and constants
+        const STORAGE_KEY = 'dealhunt_deals_v2';
+        const ADMIN_STORAGE_KEY = 'dealhunt_admin_v1';
+        let currentPage = 'home';
+        let currentDeals = [];
+        let visibleDealsCount = 8;
+
+        // URL management for dynamic pages
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialPage = urlParams.get('page') || 'home';
+
+        // Default sample data
+        const defaultDeals = [
+            { id: 1, title: 'iPhone 15 Pro Max 256GB', originalPrice: 49900, salePrice: 39900, discount: 20, store: 'shopee', storeName: 'Shopee', image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600', affiliateUrl:'https://shopee.co.th', category:'mobile', isFlashSale:true, isPublished:true, expiresAt:'2025-12-31T23:59:59', showInPage: 'flash,home' },
+            { id: 2, title: 'MacBook Air M2', originalPrice: 39900, salePrice: 29900, discount:25, store:'jib', storeName:'JIB', image:'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600', affiliateUrl:'https://www.jib.co.th', category:'computer', isFlashSale:true, isPublished:true, expiresAt:'2025-12-31T23:59:59', showInPage: 'flash,home' },
+            { id: 3, title: 'Nike Air Force 1', originalPrice:3500, salePrice:2800, discount:20, store:'shopee', storeName:'Shopee', image:'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600', affiliateUrl:'https://shopee.co.th', category:'fashion', isFlashSale:false, isPublished:true, showInPage: 'home,deals-fashion' },
+            { id: 4, title: 'Samsung Galaxy S24', originalPrice:32900, salePrice:27900, discount:15, store:'lazada', storeName:'Lazada', image:'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600', affiliateUrl:'https://www.lazada.co.th', category:'mobile', isFlashSale:false, isPublished:true, showInPage: 'deals-mobile,home' },
+            { id: 5, title: 'PS5 Gaming Console', originalPrice:18900, salePrice:16900, discount:11, store:'powerbuy', storeName:'Power Buy', image:'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600', affiliateUrl:'https://www.powerbuy.co.th', category:'gaming', isFlashSale:true, isPublished:true, showInPage: 'flash-mega,deals-gaming' },
+            { id: 6, title: 'Dell XPS 13', originalPrice:35900, salePrice:29900, discount:17, store:'jib', storeName:'JIB', image:'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600', affiliateUrl:'https://www.jib.co.th', category:'computer', isFlashSale:false, isPublished:true, showInPage: 'deals-computer,home' },
+            { id: 7, title: 'Adidas Ultraboost', originalPrice:5500, salePrice:3900, discount:29, store:'lazada', storeName:'Lazada', image:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600', affiliateUrl:'https://www.lazada.co.th', category:'fashion', isFlashSale:true, isPublished:true, showInPage: 'flash-weekend,deals-fashion' },
+            { id: 8, title: 'Dyson V15 Detect', originalPrice:24900, salePrice:19900, discount:20, store:'powerbuy', storeName:'Power Buy', image:'https://images.unsplash.com/photo-1558618644-fcd25c85cd64?w=600', affiliateUrl:'https://www.powerbuy.co.th', category:'home', isFlashSale:false, isPublished:true, showInPage: 'deals-home,home' }
+        ];
+
+        // Page navigation system with URL support
+        function navigateToPage(pageId) {
+            // Prevent default link behavior
+            event?.preventDefault();
+            
+            // Update URL without page reload
+            const newUrl = pageId === 'home' ? 
+                window.location.pathname : 
+                `${window.location.pathname}?page=${pageId}`;
+            history.pushState({page: pageId}, '', newUrl);
+            
+            showPage(pageId);
+        }
+
+        function showPage(pageId) {
+            // Hide mobile menu
+            document.getElementById('mobileMenu').classList.remove('active');
+            
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            const targetPage = document.getElementById(`page-${pageId}`);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                currentPage = pageId;
+                
+                // Update navigation active state
+                updateNavigation(pageId);
+                
+                // Render content for the page
+                renderPageContent(pageId);
+                
+                // Update page title
+                updatePageTitle(pageId);
+                
+                // Scroll to top
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+
+        function updatePageTitle(pageId) {
+            const titles = {
+                'home': 'DealHunt — หน้าแรก',
+                'flash': 'Flash Sale — DealHunt',
+                'flash-today': 'Flash Sale วันนี้ — DealHunt',
+                'flash-weekend': 'Flash Sale สุดสัปดาห์ — DealHunt',
+                'flash-mega': 'Mega Flash Sale — DealHunt',
+                'deals': 'โปรโมชั่นทั้งหมด — DealHunt',
+                'deals-mobile': 'โปรโมชั่นมือถือ — DealHunt',
+                'deals-computer': 'โปรโมชั่นคอมพิวเตอร์ — DealHunt',
+                'deals-fashion': 'โปรโมชั่นแฟชั่น — DealHunt',
+                'deals-home': 'โปรโมชั่นบ้านและสวน — DealHunt',
+                'deals-gaming': 'โปรโมชั่นเกมส์ — DealHunt',
+                'deals-health': 'โปรโมชั่นสุขภาพ — DealHunt',
+                'stores': 'ร้านค้าพาร์ทเนอร์ — DealHunt',
+                'store-shopee': 'Shopee — DealHunt',
+                'store-lazada': 'Lazada — DealHunt',
+                'store-jib': 'JIB — DealHunt',
+                'store-powerbuy': 'Power Buy — DealHunt',
+                'about': 'เกี่ยวกับเรา — DealHunt',
+                'contact': 'ติดต่อเรา — DealHunt',
+                'faq': 'คำถามที่พบบ่อย — DealHunt',
+                'privacy': 'นโยบายความเป็นส่วนตัว — DealHunt'
+            };
+            document.title = titles[pageId] || 'DealHunt — ระบบหน้าเว็บแบบไดนามิค';
+        }
+
+        function updateNavigation(activePageId) {
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Add active class to current page nav link or parent
+            const activeLink = document.querySelector(`[data-page="${activePageId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            } else {
+                // Handle sub-pages by activating parent nav
+                if (activePageId.startsWith('flash-')) {
+                    document.querySelector('[data-page="flash"]')?.classList.add('active');
+                } else if (activePageId.startsWith('deals-')) {
+                    document.querySelector('[data-page="deals"]')?.classList.add('active');
+                } else if (activePageId.startsWith('store-')) {
+                    document.querySelector('[data-page="stores"]')?.classList.add('active');
+                } else if (['contact', 'faq', 'privacy'].includes(activePageId)) {
+                    document.querySelector('[data-page="about"]')?.classList.add('active');
+                }
+            }
+        }
+
+        function renderPageContent(pageId) {
+            const deals = getDeals();
+            
+            switch(pageId) {
+                case 'home':
+                    renderHomeContent(deals);
+                    break;
+                case 'flash':
+                    renderFlashSaleContent(deals);
+                    startCountdown();
+                    break;
+                case 'flash-today':
+                    renderFlashTodayContent(deals);
+                    break;
+                case 'flash-weekend':
+                    renderFlashWeekendContent(deals);
+                    break;
+                case 'flash-mega':
+                    renderFlashMegaContent(deals);
+                    break;
+                case 'deals':
+                    renderAllDealsContent(deals);
+                    break;
+                case 'deals-mobile':
+                    renderCategoryContent(deals, 'mobile', 'mobileDeals');
+                    break;
+                case 'deals-computer':
+                    renderCategoryContent(deals, 'computer', 'computerDeals');
+                    break;
+                case 'deals-fashion':
+                    renderCategoryContent(deals, 'fashion', 'fashionDeals');
+                    break;
+                case 'deals-home':
+                    renderCategoryContent(deals, 'home', 'homeDeals');
+                    break;
+                case 'deals-gaming':
+                    renderCategoryContent(deals, 'gaming', 'gamingDeals');
+                    break;
+                case 'deals-health':
+                    renderCategoryContent(deals, 'health', 'healthDeals');
+                    break;
+                case 'stores':
+                    renderAllStoresContent(deals);
+                    break;
+                case 'store-shopee':
+                    renderStoreContent(deals, 'shopee', 'shopeeDeals');
+                    break;
+                case 'store-lazada':
+                    renderStoreContent(deals, 'lazada', 'lazadaDeals');
+                    break;
+                case 'store-jib':
+                    renderStoreContent(deals, 'jib', 'jibDeals');
+                    break;
+                case 'store-powerbuy':
+                    renderStoreContent(deals, 'powerbuy', 'powerbuyDeals');
+                    break;
+            }
+        }
+
+        // Content rendering functions
+        function renderHomeContent(deals) {
+            // Flash deals preview
+            const flashDeals = deals.filter(d => d.isFlashSale && d.isPublished).slice(0, 4);
+            renderDealsGrid('homeFlashDeals', flashDeals);
+            
+            // Featured deals preview
+            const featuredDeals = deals.filter(d => d.isPublished && d.showInPage?.includes('home')).slice(0, 8);
+            renderDealsGrid('homeFeaturedDeals', featuredDeals);
+        }
+
+        function renderFlashSaleContent(deals) {
+            const flashDeals = deals.filter(d => d.isFlashSale && d.isPublished);
+            renderDealsGrid('flashSaleDeals', flashDeals);
+        }
+
+        function renderFlashTodayContent(deals) {
+            const todayDeals = deals.filter(d => d.showInPage?.includes('flash-today') && d.isPublished);
+            renderDealsGrid('flashTodayDeals', todayDeals);
+        }
+
+        function renderFlashWeekendContent(deals) {
+            const weekendDeals = deals.filter(d => d.showInPage?.includes('flash-weekend') && d.isPublished);
+            renderDealsGrid('flashWeekendDeals', weekendDeals);
+        }
+
+        function renderFlashMegaContent(deals) {
+            const megaDeals = deals.filter(d => d.showInPage?.includes('flash-mega') && d.isPublished);
+            renderDealsGrid('flashMegaDeals', megaDeals);
+        }
+
+        function renderAllDealsContent(deals) {
+            currentDeals = deals.filter(d => d.isPublished);
+            const visibleDeals = currentDeals.slice(0, visibleDealsCount);
+            renderDealsGrid('allDeals', visibleDeals);
+            
+            // Show/hide load more button
+            const loadMoreBtn = document.getElementById('loadMore');
+            if (loadMoreBtn) {
+                loadMoreBtn.style.display = currentDeals.length > visibleDealsCount ? 'inline-block' : 'none';
+            }
+        }
+
+        function renderCategoryContent(deals, category, containerId) {
+            const categoryDeals = deals.filter(d => d.category === category && d.isPublished);
+            renderDealsGrid(containerId, categoryDeals);
+        }
+
+        function renderStoreContent(deals, store, containerId) {
+            const storeDeals = deals.filter(d => d.store === store && d.isPublished);
+            renderDealsGrid(containerId, storeDeals);
+        }
+
+        function renderAllStoresContent(deals) {
+            const allStoreDeals = deals.filter(d => d.isPublished);
+            renderDealsGrid('allStoresDeals', allStoreDeals);
+        }
+
+        function renderDealsGrid(containerId, deals) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            container.innerHTML = deals.length ? deals.map(deal => createDealCard(deal)).join('') : 
+                '<div class="col-span-full text-center text-gray-500 py-8">ไม่พบโปรโมชั่นในขณะนี้</div>';
+        }
+
+        function createDealCard(deal) {
+            const discountPercent = Math.round(((deal.originalPrice - deal.salePrice) / deal.originalPrice) * 100);
+            const affiliateLink = deal.affiliateUrl || '#';
+            
+            return `
+                <div class="deal-card bg-white rounded-xl overflow-hidden shadow-md" onclick="window.open('${affiliateLink}', '_blank')">
+                    <div class="relative">
+                        <img src="${deal.image}" alt="${deal.title}" class="w-full h-48 object-cover" />
+                        <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+                            -${discountPercent}%
+                        </div>
+                        ${deal.isFlashSale ? '<div class="absolute top-2 right-2 bg-yellow-400 text-red-600 px-2 py-1 rounded text-xs font-bold pulse-animation">⚡ FLASH</div>' : ''}
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-semibold line-clamp-2 mb-2 text-gray-800">${deal.title}</h4>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-500">${deal.storeName}</span>
+                            ${deal.expiresAt ? `<span class="text-xs text-red-500">หมดเขต ${new Date(deal.expiresAt).toLocaleDateString('th-TH')}</span>` : ''}
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-lg font-bold text-red-600">฿${deal.salePrice.toLocaleString()}</span>
+                                <span class="text-sm text-gray-400 line-through ml-2">฿${deal.originalPrice.toLocaleString()}</span>
+                            </div>
+                            <button class="bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600 transition-colors">
+                                ดูดีล
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Utility functions
+        function getDeals() {
+            const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            return stored.length ? stored : defaultDeals;
+        }
+
+        function saveDeals(deals) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(deals));
+        }
+
+        function startCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            if (!countdownElement) return;
+            
+            const targetTime = new Date();
+            targetTime.setHours(23, 59, 59, 999);
+            
+            function updateCountdown() {
+                const now = new Date();
+                const diff = targetTime - now;
+                
+                if (diff <= 0) {
+                    countdownElement.textContent = '00:00:00';
+                    return;
+                }
+                
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                countdownElement.textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        // Form handlers
+        function handleContactForm(event) {
+            event.preventDefault();
+            alert('ขอบคุณสำหรับข้อความ! เราจะติดต่อกลับโดยเร็ว');
+            event.target.reset();
+        }
+
+        // Search functionality
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (!query) return;
+            
+            navigateToPage('deals');
+            
+            setTimeout(() => {
+                const deals = getDeals().filter(deal => 
+                    deal.title.toLowerCase().includes(query) ||
+                    deal.storeName.toLowerCase().includes(query) ||
+                    deal.category.toLowerCase().includes(query)
+                );
+                renderDealsGrid('allDeals', deals);
+            }, 100);
+        }
+
+        // Admin password management with Hash + Salt
+        async function generateHash(password, salt = null) {
+            // Generate salt if not provided
+            if (!salt) {
+                const array = new Uint8Array(16);
+                crypto.getRandomValues(array);
+                salt = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+            }
+            
+            // Create password hash using PBKDF2
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password + salt);
+            const key = await crypto.subtle.importKey(
+                'raw',
+                encoder.encode(password),
+                { name: 'PBKDF2' },
+                false,
+                ['deriveKey']
+            );
+            
+            const derivedKey = await crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt: encoder.encode(salt),
+                    iterations: 10000,
+                    hash: 'SHA-256'
+                },
+                key,
+                { name: 'HMAC', hash: 'SHA-256', length: 256 },
+                true,
+                ['sign']
+            );
+            
+            const keyData = await crypto.subtle.exportKey('raw', derivedKey);
+            const hashArray = new Uint8Array(keyData);
+            const hashHex = Array.from(hashArray, byte => byte.toString(16).padStart(2, '0')).join('');
+            
+            return { hash: hashHex, salt: salt };
+        }
+
+        async function verifyPassword(inputPassword, storedHash, storedSalt) {
+            const { hash } = await generateHash(inputPassword, storedSalt);
+            return hash === storedHash;
+        }
+
+        function initializeAdminPassword() {
+            const adminData = localStorage.getItem(ADMIN_STORAGE_KEY);
+            if (!adminData) {
+                // Set default password 'admin123' on first run
+                generateHash('admin123').then(({ hash, salt }) => {
+                    const adminAuth = { hash, salt };
+                    localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(adminAuth));
+                });
+            }
+        }
+
+        async function changeAdminPassword() {
+            const currentPassword = prompt('กรุณาใส่รหัสผ่านปัจจุบัน:');
+            if (!currentPassword) return;
+            
+            const adminData = JSON.parse(localStorage.getItem(ADMIN_STORAGE_KEY) || '{}');
+            if (!adminData.hash || !adminData.salt) {
+                alert('ไม่พบข้อมูลรหัสผ่าน');
+                return;
+            }
+            
+            const isValid = await verifyPassword(currentPassword, adminData.hash, adminData.salt);
+            if (!isValid) {
+                alert('รหัสผ่านปัจจุบันไม่ถูกต้อง');
+                return;
+            }
+            
+            const newPassword = prompt('กรุณาใส่รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร):');
+            if (!newPassword || newPassword.length < 8) {
+                alert('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
+                return;
+            }
+            
+            const confirmPassword = prompt('ยืนยันรหัสผ่านใหม่:');
+            if (newPassword !== confirmPassword) {
+                alert('รหัสผ่านไม่ตรงกัน');
+                return;
+            }
+            
+            const { hash, salt } = await generateHash(newPassword);
+            localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify({ hash, salt }));
+            alert('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
+        }
+
+        async function openAdminModal() {
+            const password = prompt('กรุณาใส่รหัสผ่าน Admin:');
+            if (!password) return;
+            
+            const adminData = JSON.parse(localStorage.getItem(ADMIN_STORAGE_KEY) || '{}');
+            if (!adminData.hash || !adminData.salt) {
+                alert('ไม่พบข้อมูลรหัสผ่าน กรุณาติดต่อผู้ดูแลระบบ');
+                return;
+            }
+            
+            const isValid = await verifyPassword(password, adminData.hash, adminData.salt);
+            if (isValid) {
+                document.getElementById('adminModal').classList.add('flex');
+                document.getElementById('adminModal').classList.remove('hidden');
+                renderAdminList();
+            } else {
+                alert('รหัสผ่านไม่ถูกต้อง');
+            }
+        }
+
+        function renderAdminList() {
+            const deals = getDeals();
+            const tbody = document.getElementById('adminList');
+            tbody.innerHTML = deals.map(deal => `
+                <tr class="border-b">
+                    <td class="p-2">${deal.id}</td>
+                    <td class="p-2">${deal.title.substring(0, 20)}...</td>
+                    <td class="p-2">${deal.storeName}</td>
+                    <td class="p-2">฿${deal.salePrice.toLocaleString()}</td>
+                    <td class="p-2">${deal.showInPage || 'ไม่ระบุ'}</td>
+                    <td class="p-2">${deal.isFlashSale ? '⚡' : '❌'}</td>
+                    <td class="p-2">
+                        <button onclick="editDeal(${deal.id})" class="text-blue-600 hover:underline text-xs mr-2">แก้ไข</button>
+                        <button onclick="deleteDeal(${deal.id})" class="text-red-600 hover:underline text-xs">ลบ</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function saveDeal(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const dealData = {};
+            
+            // Get form values
+            dealData.id = parseInt(document.getElementById('dealId').value) || Date.now();
+            dealData.title = document.getElementById('title').value;
+            dealData.affiliateUrl = document.getElementById('affiliateUrl').value || '#';
+            dealData.originalPrice = parseFloat(document.getElementById('originalPrice').value) || 0;
+            dealData.salePrice = parseFloat(document.getElementById('salePrice').value) || 0;
+            dealData.image = document.getElementById('image').value || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600';
+            dealData.store = document.getElementById('store').value;
+            dealData.storeName = getStoreName(dealData.store);
+            dealData.category = document.getElementById('category').value;
+            dealData.showInPage = document.getElementById('showInPage').value;
+            dealData.isFlashSale = document.getElementById('isFlashSale').checked;
+            dealData.isPublished = document.getElementById('isPublished').checked;
+            dealData.expiresAt = document.getElementById('expiresAt').value || null;
+            dealData.discount = Math.round(((dealData.originalPrice - dealData.salePrice) / dealData.originalPrice) * 100);
+            
+            const deals = getDeals();
+            const existingIndex = deals.findIndex(d => d.id === dealData.id);
+            
+            if (existingIndex >= 0) {
+                deals[existingIndex] = dealData;
+            } else {
+                deals.push(dealData);
+            }
+            
+            saveDeals(deals);
+            renderAdminList();
+            clearForm();
+            alert('บันทึกเรียบร้อยแล้ว');
+        }
+
+        function getStoreName(storeCode) {
+            const storeNames = {
+                'shopee': 'Shopee',
+                'lazada': 'Lazada',
+                'jib': 'JIB',
+                'powerbuy': 'Power Buy'
+            };
+            return storeNames[storeCode] || storeCode;
+        }
+
+        function editDeal(id) {
+            const deals = getDeals();
+            const deal = deals.find(d => d.id === id);
+            if (!deal) return;
+            
+            // Populate form
+            document.getElementById('dealId').value = deal.id;
+            document.getElementById('title').value = deal.title;
+            document.getElementById('affiliateUrl').value = deal.affiliateUrl || '';
+            document.getElementById('originalPrice').value = deal.originalPrice;
+            document.getElementById('salePrice').value = deal.salePrice;
+            document.getElementById('image').value = deal.image;
+            document.getElementById('store').value = deal.store;
+            document.getElementById('category').value = deal.category;
+            document.getElementById('showInPage').value = deal.showInPage || '';
+            document.getElementById('isFlashSale').checked = deal.isFlashSale;
+            document.getElementById('isPublished').checked = deal.isPublished;
+            document.getElementById('expiresAt').value = deal.expiresAt || '';
+        }
+
+        function deleteDeal(id) {
+            if (confirm('ต้องการลบโปรโมชั่นนี้?')) {
+                const deals = getDeals();
+                const filteredDeals = deals.filter(d => d.id !== id);
+                saveDeals(filteredDeals);
+                renderAdminList();
+                alert('ลบเรียบร้อยแล้ว');
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('dealForm').reset();
+            document.getElementById('dealId').value = '';
+            document.getElementById('isPublished').checked = true;
+        }
+
+        function exportData() {
+            const deals = getDeals();
+            const dataStr = JSON.stringify(deals, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'dealhunt_deals.json';
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function importData() {
+            document.getElementById('fileImport').click();
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedDeals = JSON.parse(e.target.result);
+                    if (confirm('นำเข้าข้อมูลใหม่? (ข้อมูลเดิมจะถูกแทนที่)')) {
+                        saveDeals(importedDeals);
+                        renderAdminList();
+                        alert('นำเข้าข้อมูลเรียบร้อยแล้ว');
+                    }
+                } catch (error) {
+                    alert('ไฟล์ไม่ถูกต้อง');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+       // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize admin password system
+            initializeAdminPassword();
+            
+            // Set current year in footer
+            document.getElementById('year').textContent = new Date().getFullYear();
+            
+            // Show initial page
+            showPage(initialPage);
+            
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                document.getElementById('mobileMenu').classList.toggle('active');
+            });
+            
+            // Search functionality
+            document.getElementById('btnSearch').addEventListener('click', handleSearch);
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') handleSearch();
+            });
+            
+            // Admin modal
+            document.getElementById('openAdminBtn').addEventListener('click', openAdminModal);
+            document.getElementById('closeAdmin').addEventListener('click', function() {
+                document.getElementById('adminModal').classList.add('hidden');
+                document.getElementById('adminModal').classList.remove('flex');
+            });
+            
+            // Admin form
+            document.getElementById('dealForm').addEventListener('submit', saveDeal);
+            document.getElementById('btnClearForm').addEventListener('click', clearForm);
+            document.getElementById('btnExportJson').addEventListener('click', exportData);
+            document.getElementById('btnImportJson').addEventListener('click', importData);
+            document.getElementById('btnChangePassword').addEventListener('click', changeAdminPassword);
+            document.getElementById('fileImport').addEventListener('change', handleFileImport);
+            
+            // Load more functionality
+            document.getElementById('loadMore')?.addEventListener('click', function() {
+                visibleDealsCount += 8;
+                renderAllDealsContent(getDeals());
+            });
+            
+            // Sort and filter functionality
+            document.getElementById('sortSelect')?.addEventListener('change', function() {
+                const sortBy = this.value;
+                const deals = getDeals().filter(d => d.isPublished);
+                
+                switch(sortBy) {
+                    case 'discount':
+                        deals.sort((a, b) => b.discount - a.discount);
+                        break;
+                    case 'price-low':
+                        deals.sort((a, b) => a.salePrice - b.salePrice);
+                        break;
+                    case 'price-high':
+                        deals.sort((a, b) => b.salePrice - a.salePrice);
+                        break;
+                    default:
+                        deals.sort((a, b) => b.id - a.id);
+                }
+                
+                currentDeals = deals;
+                renderDealsGrid('allDeals', deals.slice(0, visibleDealsCount));
+            });
+            
+            document.getElementById('storeFilter')?.addEventListener('change', function() {
+                const filterStore = this.value;
+                let deals = getDeals().filter(d => d.isPublished);
+                
+                if (filterStore) {
+                    deals = deals.filter(d => d.store === filterStore);
+                }
+                
+                currentDeals = deals;
+                renderDealsGrid('allDeals', deals.slice(0, visibleDealsCount));
+            });
+        });
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function(event) {
+            const pageId = event.state?.page || new URLSearchParams(window.location.search).get('page') || 'home';
+            showPage(pageId);
+        });
+
+        // Initialize with current URL state
+        if (initialPage !== 'home') {
+            history.replaceState({page: initialPage}, '', window.location.href);
+        }
+    </script>
+</body>
+</html>
